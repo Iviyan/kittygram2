@@ -1,27 +1,15 @@
 ### Как запустить проект:
 
-Клонировать репозиторий и перейти в него в командной строке:
+Источник: https://github.com/yandex-praktikum/kittygram2.git
 
-```
-git clone https://github.com/yandex-praktikum/kittygram2.git
-```
-
-```
-cd kittygram2
-```
 
 Cоздать и активировать виртуальное окружение:
+(Для запуска проекта необходима версия python 3.11)
 
 ```
-python3 -m venv env
-```
-
-```
-source env/bin/activate
-```
-
-```
-python3 -m pip install --upgrade pip
+py -3.11 -m venv env
+.\env\Scripts\activate
+python -m pip install --upgrade pip
 ```
 
 Установить зависимости из файла requirements.txt:
@@ -33,11 +21,11 @@ pip install -r requirements.txt
 Выполнить миграции:
 
 ```
-python3 manage.py migrate
+python manage.py migrate
 ```
 
 Запустить проект:
 
 ```
-python3 manage.py runserver
+python manage.py runserver
 ```
