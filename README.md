@@ -1,6 +1,6 @@
 # Kittygram API
 
-REST API для управления котиками и их достижениями.
+REST API для управления котиками и их достижениями. Включает модуль «Кото-путешествия» для отслеживания поездок котов.
 
 **Стек:** Python 3.11, Django 3.2, Django REST Framework 3.12, JWT-аутентификация (djoser + simplejwt)
 
@@ -84,6 +84,12 @@ curl http://127.0.0.1:8000/cats/ \
 | `/achievements/{id}/` | GET, PUT, PATCH, DELETE | Детали достижения |
 | `/users/` | GET | Список пользователей |
 | `/users/{id}/` | GET | Детали пользователя |
+| `/trips/` | GET, POST | Список / создание поездок |
+| `/trips/{id}/` | GET, PUT, PATCH, DELETE | Детали поездки |
+| `/trips/{id}/activate/` | POST | Начать поездку |
+| `/trips/{id}/complete/` | POST | Завершить поездку |
+| `/trips/{id}/stops/` | GET, POST | Остановки поездки |
+| `/trips/{id}/stops/{pk}/` | GET, PUT, PATCH, DELETE | Детали остановки |
 | `/auth/users/` | POST | Регистрация |
 | `/auth/jwt/create/` | POST | Получение JWT-токена |
 | `/auth/jwt/refresh/` | POST | Обновление токена |
