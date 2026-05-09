@@ -48,7 +48,7 @@ class CatSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, data):
-        if data['color'] == data['name']:
+        if data.get('color') and data.get('name') and data['color'] == data['name']:
             raise serializers.ValidationError('Имя не может совпадать с цветом!')
         return data
 
