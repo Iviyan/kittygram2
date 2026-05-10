@@ -59,12 +59,20 @@ class CatSerializer(serializers.ModelSerializer):
         if 'achievements' not in self.initial_data:
             cat = Cat.objects.create(**validated_data)
             return cat
-        else:
-            achievements = validated_data.pop('achievements')
-            cat = Cat.objects.create(**validated_data)
-            for achievement in achievements:
-                current_achievement, status = Achievement.objects.get_or_create(
-                    **achievement)
-                AchievementCat.objects.create(
-                    achievement=current_achievement, cat=cat)
-            return cat
+        achievements = validated_data.pop('achievements')
+        cat = Cat.objects.create(**validated_data)
+        for achievement in achievements:
+            current_achievement, _ = Achievement.objects.get_or_create(**achievement)
+            AchievementCat.objects.create(achievement=current_achievement, cat=cat)
+        return cat
+
+    def update(self, instance, validated_data):
+        if 'achievements' not in self.initial_data:
+            return super().update(instance, validated_data)
+        achievements = validated_data.pop('achievements')
+        instance = super().update(instance, validated_data)
+        AchievementCat.objects.filter(cat=instance).delete()
+        for achievement in achievements:
+            current_achievement, _ = Achievement.objects.get_or_create(**achievement)
+            AchievementCat.objects.create(achievement=current_achievement, cat=instance)
+        return instance
