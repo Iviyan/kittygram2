@@ -1,0 +1,1099 @@
+{
+	"info": {
+		"name": "Kittygram API",
+		"description": "Полная коллекция запросов к Kittygram API. Охватывает аутентификацию (djoser + JWT), управление пользователями, котами, достижениями, поездками и остановками. Запустите «Register user» → «Get JWT token» — токен сохранится автоматически.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{ "key": "base_url",      "value": "http://127.0.0.1:8000", "description": "Базовый URL сервера" },
+		{ "key": "token",         "value": "",                       "description": "Access-токен (заполняется автоматически после Get JWT token)" },
+		{ "key": "refresh_token", "value": "",                       "description": "Refresh-токен (заполняется автоматически после Get JWT token)" },
+		{ "key": "cat_id",        "value": "1",                      "description": "ID кота для запросов detail/update/delete" },
+		{ "key": "achievement_id","value": "1",                      "description": "ID достижения" },
+		{ "key": "trip_id",       "value": "1",                      "description": "ID поездки" },
+		{ "key": "stop_id",       "value": "1",                      "description": "ID остановки" }
+	],
+	"item": [
+		{
+			"name": "Auth",
+			"description": "Регистрация, JWT-аутентификация и управление аккаунтом через djoser.",
+			"item": [
+				{
+					"name": "Register user",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"TestPass123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/users/",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "users", ""]
+						}
+					}
+				},
+				{
+					"name": "Get JWT token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var j = pm.response.json();",
+									"if (j.access)  pm.collectionVariables.set('token',         j.access);",
+									"if (j.refresh) pm.collectionVariables.set('refresh_token',  j.refresh);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"TestPass123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/jwt/create/",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "jwt", "create", ""]
+						}
+					}
+				},
+				{
+					"name": "Refresh JWT token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var j = pm.response.json();",
+									"if (j.access) pm.collectionVariables.set('token', j.access);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/jwt/refresh/",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "jwt", "refresh", ""]
+						}
+					}
+				},
+				{
+					"name": "Verify JWT token",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"token\": \"{{token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/jwt/verify/",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "jwt", "verify", ""]
+						}
+					}
+				},
+				{
+					"name": "Get current user (me)",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/auth/users/me/",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "users", "me", ""]
+						}
+					}
+				},
+				{
+					"name": "Update current user (me)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"first_name\": \"Иван\",\n  \"last_name\": \"Тестов\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/users/me/",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "users", "me", ""]
+						}
+					}
+				},
+				{
+					"name": "Change password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"current_password\": \"TestPass123!\",\n  \"new_password\": \"NewPass456!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/users/set_password/",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "users", "set_password", ""]
+						}
+					}
+				},
+				{
+					"name": "Delete account (me)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"current_password\": \"TestPass123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/users/me/",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "users", "me", ""]
+						}
+					}
+				},
+				{
+					"name": "(error) Register — weak password",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"testuser2\",\n  \"password\": \"123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/users/",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "users", ""]
+						}
+					}
+				},
+				{
+					"name": "(error) Get token — wrong credentials",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"wrongpassword\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/jwt/create/",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "jwt", "create", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"description": "Read-only эндпоинты /users/ (UserViewSet — только GET).",
+			"item": [
+				{
+					"name": "List users",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/users/",
+							"host": ["{{base_url}}"],
+							"path": ["users", ""]
+						}
+					}
+				},
+				{
+					"name": "Get user detail",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/users/1/",
+							"host": ["{{base_url}}"],
+							"path": ["users", "1", ""]
+						}
+					}
+				},
+				{
+					"name": "(error) Unauthenticated request",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/",
+							"host": ["{{base_url}}"],
+							"path": ["users", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Cats",
+			"description": "Полный CRUD для котов. Доступные цвета: Gray, Black, White, Ginger, Mixed. Год рождения: (текущий_год − 40) < birth_year <= текущий_год. Поле achievements при PUT/PATCH заменяет список целиком; если поле не передано — достижения не изменяются.",
+			"item": [
+				{
+					"name": "List cats",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/cats/",
+							"host": ["{{base_url}}"],
+							"path": ["cats", ""]
+						}
+					}
+				},
+				{
+					"name": "Create cat (minimal)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var j = pm.response.json();",
+									"if (j.id) pm.collectionVariables.set('cat_id', String(j.id));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Мурзик\",\n  \"color\": \"Gray\",\n  \"birth_year\": 2020\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/cats/",
+							"host": ["{{base_url}}"],
+							"path": ["cats", ""]
+						}
+					}
+				},
+				{
+					"name": "Create cat with achievements",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Барсик\",\n  \"color\": \"Black\",\n  \"birth_year\": 2019,\n  \"achievements\": [\n    {\"achievement_name\": \"Ловит мышей\"},\n    {\"achievement_name\": \"Чемпион по сну\"}\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/cats/",
+							"host": ["{{base_url}}"],
+							"path": ["cats", ""]
+						}
+					}
+				},
+				{
+					"name": "Get cat detail",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/cats/{{cat_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["cats", "{{cat_id}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Full update cat (PUT) — with achievements",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Мурзик\",\n  \"color\": \"White\",\n  \"birth_year\": 2020,\n  \"achievements\": [\n    {\"achievement_name\": \"Лучший друг\"}\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/cats/{{cat_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["cats", "{{cat_id}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Partial update cat — fields only (PATCH)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"color\": \"Ginger\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/cats/{{cat_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["cats", "{{cat_id}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Partial update cat — replace achievements (PATCH)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"achievements\": [\n    {\"achievement_name\": \"Чемпион по сну\"},\n    {\"achievement_name\": \"Любитель рыбы\"}\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/cats/{{cat_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["cats", "{{cat_id}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Partial update cat — clear achievements (PATCH)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"achievements\": []\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/cats/{{cat_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["cats", "{{cat_id}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Delete cat",
+					"request": {
+						"method": "DELETE",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/cats/{{cat_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["cats", "{{cat_id}}", ""]
+						}
+					}
+				},
+				{
+					"name": "(error) Birth year out of range",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Древний\",\n  \"color\": \"Gray\",\n  \"birth_year\": 1900\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/cats/",
+							"host": ["{{base_url}}"],
+							"path": ["cats", ""]
+						}
+					}
+				},
+				{
+					"name": "(error) Name equals color",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Gray\",\n  \"color\": \"Gray\",\n  \"birth_year\": 2021\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/cats/",
+							"host": ["{{base_url}}"],
+							"path": ["cats", ""]
+						}
+					}
+				},
+				{
+					"name": "(error) Duplicate name for same owner",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Мурзик\",\n  \"color\": \"Black\",\n  \"birth_year\": 2022\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/cats/",
+							"host": ["{{base_url}}"],
+							"path": ["cats", ""]
+						}
+					}
+				},
+				{
+					"name": "(error) Invalid color choice",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Котик\",\n  \"color\": \"Red\",\n  \"birth_year\": 2021\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/cats/",
+							"host": ["{{base_url}}"],
+							"path": ["cats", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Achievements",
+			"description": "Полный CRUD для достижений. Поле: achievement_name (строка, до 64 символов).",
+			"item": [
+				{
+					"name": "List achievements",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/achievements/",
+							"host": ["{{base_url}}"],
+							"path": ["achievements", ""]
+						}
+					}
+				},
+				{
+					"name": "Create achievement",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var j = pm.response.json();",
+									"if (j.id) pm.collectionVariables.set('achievement_id', String(j.id));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"achievement_name\": \"Лучший охотник\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/achievements/",
+							"host": ["{{base_url}}"],
+							"path": ["achievements", ""]
+						}
+					}
+				},
+				{
+					"name": "Get achievement detail",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/achievements/{{achievement_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["achievements", "{{achievement_id}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Full update achievement (PUT)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"achievement_name\": \"Лучший охотник года\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/achievements/{{achievement_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["achievements", "{{achievement_id}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Partial update achievement (PATCH)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"achievement_name\": \"Чемпион по сну\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/achievements/{{achievement_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["achievements", "{{achievement_id}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Delete achievement",
+					"request": {
+						"method": "DELETE",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/achievements/{{achievement_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["achievements", "{{achievement_id}}", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Trips",
+			"description": "Полный CRUD поездок + кастомные действия activate/complete + фильтры. Поездка принадлежит текущему пользователю и привязана к его коту.",
+			"item": [
+				{
+					"name": "List trips",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/trips/",
+							"host": ["{{base_url}}"],
+							"path": ["trips", ""]
+						}
+					}
+				},
+				{
+					"name": "List trips — filter by status=planned",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/trips/?status=planned",
+							"host": ["{{base_url}}"],
+							"path": ["trips", ""],
+							"query": [{"key": "status", "value": "planned"}]
+						}
+					}
+				},
+				{
+					"name": "List trips — filter by status=active",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/trips/?status=active",
+							"host": ["{{base_url}}"],
+							"path": ["trips", ""],
+							"query": [{"key": "status", "value": "active"}]
+						}
+					}
+				},
+				{
+					"name": "List trips — filter by status=completed",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/trips/?status=completed",
+							"host": ["{{base_url}}"],
+							"path": ["trips", ""],
+							"query": [{"key": "status", "value": "completed"}]
+						}
+					}
+				},
+				{
+					"name": "List trips — filter by cat",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/trips/?cat={{cat_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["trips", ""],
+							"query": [{"key": "cat", "value": "{{cat_id}}"}]
+						}
+					}
+				},
+				{
+					"name": "List trips — search by title",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/trips/?search=дача",
+							"host": ["{{base_url}}"],
+							"path": ["trips", ""],
+							"query": [{"key": "search", "value": "дача"}]
+						}
+					}
+				},
+				{
+					"name": "List trips — search by cat name",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/trips/?search=Мурзик",
+							"host": ["{{base_url}}"],
+							"path": ["trips", ""],
+							"query": [{"key": "search", "value": "Мурзик"}]
+						}
+					}
+				},
+				{
+					"name": "List trips — order by start_date ASC",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/trips/?ordering=start_date",
+							"host": ["{{base_url}}"],
+							"path": ["trips", ""],
+							"query": [{"key": "ordering", "value": "start_date"}]
+						}
+					}
+				},
+				{
+					"name": "List trips — order by created_at DESC",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/trips/?ordering=-created_at",
+							"host": ["{{base_url}}"],
+							"path": ["trips", ""],
+							"query": [{"key": "ordering", "value": "-created_at"}]
+						}
+					}
+				},
+				{
+					"name": "Create trip",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var j = pm.response.json();",
+									"if (j.id) pm.collectionVariables.set('trip_id', String(j.id));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"cat\": {{cat_id}},\n  \"title\": \"Поездка на дачу\",\n  \"start_date\": \"2026-06-01\",\n  \"end_date\": \"2026-06-10\",\n  \"notes\": \"Летний отдых с котом\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/trips/",
+							"host": ["{{base_url}}"],
+							"path": ["trips", ""]
+						}
+					}
+				},
+				{
+					"name": "Get trip detail",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/trips/{{trip_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["trips", "{{trip_id}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Full update trip (PUT)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"cat\": {{cat_id}},\n  \"title\": \"Поездка на дачу (обновлено)\",\n  \"start_date\": \"2026-06-05\",\n  \"end_date\": \"2026-06-15\",\n  \"notes\": \"Перенесли даты\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/trips/{{trip_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["trips", "{{trip_id}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Partial update trip (PATCH)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"notes\": \"Обновлённые заметки о поездке\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/trips/{{trip_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["trips", "{{trip_id}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Activate trip",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/trips/{{trip_id}}/activate/",
+							"host": ["{{base_url}}"],
+							"path": ["trips", "{{trip_id}}", "activate", ""]
+						}
+					}
+				},
+				{
+					"name": "Complete trip",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/trips/{{trip_id}}/complete/",
+							"host": ["{{base_url}}"],
+							"path": ["trips", "{{trip_id}}", "complete", ""]
+						}
+					}
+				},
+				{
+					"name": "Delete trip",
+					"request": {
+						"method": "DELETE",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/trips/{{trip_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["trips", "{{trip_id}}", ""]
+						}
+					}
+				},
+				{
+					"name": "(error) end_date before start_date",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"cat\": {{cat_id}},\n  \"title\": \"Ошибочная поездка\",\n  \"start_date\": \"2026-06-10\",\n  \"end_date\": \"2026-06-01\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/trips/",
+							"host": ["{{base_url}}"],
+							"path": ["trips", ""]
+						}
+					}
+				},
+				{
+					"name": "(error) Activate non-planned trip",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/trips/{{trip_id}}/activate/",
+							"host": ["{{base_url}}"],
+							"path": ["trips", "{{trip_id}}", "activate", ""]
+						}
+					}
+				},
+				{
+					"name": "(error) Complete already completed trip",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/trips/{{trip_id}}/complete/",
+							"host": ["{{base_url}}"],
+							"path": ["trips", "{{trip_id}}", "complete", ""]
+						}
+					}
+				},
+				{
+					"name": "(error) Cat belongs to another user",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"cat\": 999,\n  \"title\": \"Чужой кот\",\n  \"start_date\": \"2026-07-01\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/trips/",
+							"host": ["{{base_url}}"],
+							"path": ["trips", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Stops",
+			"description": "Вложенный CRUD остановок внутри поездки: /trips/{trip_id}/stops/. Остановку нельзя добавить в завершённую поездку. departure_date >= arrival_date.",
+			"item": [
+				{
+					"name": "List stops",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/trips/{{trip_id}}/stops/",
+							"host": ["{{base_url}}"],
+							"path": ["trips", "{{trip_id}}", "stops", ""]
+						}
+					}
+				},
+				{
+					"name": "Create stop",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var j = pm.response.json();",
+									"if (j.id) pm.collectionVariables.set('stop_id', String(j.id));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"location_name\": \"Тверь\",\n  \"arrival_date\": \"2026-06-02\",\n  \"departure_date\": \"2026-06-03\",\n  \"notes\": \"Ночёвка в Твери\",\n  \"order\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/trips/{{trip_id}}/stops/",
+							"host": ["{{base_url}}"],
+							"path": ["trips", "{{trip_id}}", "stops", ""]
+						}
+					}
+				},
+				{
+					"name": "Create second stop",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"location_name\": \"Дача в Кимрах\",\n  \"arrival_date\": \"2026-06-04\",\n  \"notes\": \"Конечная точка\",\n  \"order\": 2\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/trips/{{trip_id}}/stops/",
+							"host": ["{{base_url}}"],
+							"path": ["trips", "{{trip_id}}", "stops", ""]
+						}
+					}
+				},
+				{
+					"name": "Get stop detail",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/trips/{{trip_id}}/stops/{{stop_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["trips", "{{trip_id}}", "stops", "{{stop_id}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Full update stop (PUT)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"location_name\": \"Тверь (обновлено)\",\n  \"arrival_date\": \"2026-06-02\",\n  \"departure_date\": \"2026-06-04\",\n  \"notes\": \"Задержались на день\",\n  \"order\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/trips/{{trip_id}}/stops/{{stop_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["trips", "{{trip_id}}", "stops", "{{stop_id}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Partial update stop (PATCH)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"notes\": \"Отличное место для ночёвки\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/trips/{{trip_id}}/stops/{{stop_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["trips", "{{trip_id}}", "stops", "{{stop_id}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Delete stop",
+					"request": {
+						"method": "DELETE",
+						"header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+						"url": {
+							"raw": "{{base_url}}/trips/{{trip_id}}/stops/{{stop_id}}/",
+							"host": ["{{base_url}}"],
+							"path": ["trips", "{{trip_id}}", "stops", "{{stop_id}}", ""]
+						}
+					}
+				},
+				{
+					"name": "(error) departure_date before arrival_date",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"location_name\": \"Ярославль\",\n  \"arrival_date\": \"2026-06-05\",\n  \"departure_date\": \"2026-06-03\",\n  \"order\": 3\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/trips/{{trip_id}}/stops/",
+							"host": ["{{base_url}}"],
+							"path": ["trips", "{{trip_id}}", "stops", ""]
+						}
+					}
+				},
+				{
+					"name": "(error) Duplicate stop order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"location_name\": \"Рыбинск\",\n  \"arrival_date\": \"2026-06-03\",\n  \"order\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/trips/{{trip_id}}/stops/",
+							"host": ["{{base_url}}"],
+							"path": ["trips", "{{trip_id}}", "stops", ""]
+						}
+					}
+				},
+				{
+					"name": "(error) Add stop to completed trip",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"},
+							{"key": "Content-Type",  "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"location_name\": \"Новый город\",\n  \"arrival_date\": \"2026-06-08\",\n  \"order\": 5\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/trips/{{trip_id}}/stops/",
+							"host": ["{{base_url}}"],
+							"path": ["trips", "{{trip_id}}", "stops", ""]
+						}
+					}
+				}
+			]
+		}
+	]
+}
