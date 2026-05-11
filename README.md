@@ -103,7 +103,7 @@ curl http://127.0.0.1:8000/cats/ \
 | `PyJWT` | 2.1.0 | Работа с JWT-токенами |
 | `djangorestframework-simplejwt` | 4.8.0 | JWT-аутентификация для DRF |
 | `djoser` | 2.1.0 | Готовые эндпоинты для регистрации и управления пользователями |
-| `drf-yasg` | latest | Автогенерация Swagger/ReDoc документации |
+| `drf-yasg` | 1.21.10 | Автогенерация Swagger/ReDoc документации |
 | `gunicorn` | latest | WSGI-сервер для production (используется в Docker) |
 
 Все зависимости перечислены в [requirements.txt](requirements.txt).
