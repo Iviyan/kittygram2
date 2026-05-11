@@ -1,5 +1,7 @@
 from rest_framework import viewsets
 
+from kittygram2.permissions import IsOwnerOrReadOnly
+
 from .models import Achievement, Cat, User
 
 from .serializers import AchievementSerializer, CatSerializer, UserSerializer
@@ -8,6 +10,10 @@ from .serializers import AchievementSerializer, CatSerializer, UserSerializer
 class CatViewSet(viewsets.ModelViewSet):
     queryset = Cat.objects.all()
     serializer_class = CatSerializer
+    permission_classes = [IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        return Cat.objects.filter(owner=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)

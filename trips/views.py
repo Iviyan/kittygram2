@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .models import Trip, Stop
-from .permissions import IsOwnerOrReadOnly
+from kittygram2.permissions import IsOwnerOrReadOnly
 from .serializers import StopSerializer, TripListSerializer, TripSerializer
 
 
