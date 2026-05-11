@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import filters, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -36,9 +37,9 @@ class TripViewSet(viewsets.ModelViewSet):
     def complete(self, request, pk=None):
         """POST /trips/{id}/complete/ — завершить поездку."""
         trip = self.get_object()
-        if trip.status == 'completed':
+        if trip.status != 'active':
             return Response(
-                {'detail': 'Поездка уже завершена.'},
+                {'detail': 'Завершить можно только активную поездку.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         trip.status = 'completed'
@@ -70,8 +71,8 @@ class StopViewSet(viewsets.ModelViewSet):
         )
 
     def perform_create(self, serializer):
-        trip = Trip.objects.get(
-            pk=self.kwargs['trip_pk'], owner=self.request.user
+        trip = get_object_or_404(
+            Trip, pk=self.kwargs['trip_pk'], owner=self.request.user
         )
         if trip.status == 'completed':
             raise serializers.ValidationError(

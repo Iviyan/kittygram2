@@ -12,11 +12,12 @@ class StopSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, data):
-        if data.get('departure_date') and data.get('arrival_date'):
-            if data['departure_date'] < data['arrival_date']:
-                raise serializers.ValidationError(
-                    'Дата отъезда не может быть раньше даты прибытия.'
-                )
+        arrival_date = data.get('arrival_date', self.instance.arrival_date if self.instance else None)
+        departure_date = data.get('departure_date', self.instance.departure_date if self.instance else None)
+        if arrival_date and departure_date and departure_date < arrival_date:
+            raise serializers.ValidationError(
+                'Дата отъезда не может быть раньше даты прибытия.'
+            )
         view = self.context.get('view')
         order = data.get('order')
         if view and order is not None:
@@ -47,11 +48,12 @@ class TripSerializer(serializers.ModelSerializer):
         read_only_fields = ('status', 'created_at')
 
     def validate(self, data):
-        if data.get('end_date') and data.get('start_date'):
-            if data['end_date'] < data['start_date']:
-                raise serializers.ValidationError(
-                    'Дата окончания не может быть раньше даты начала.'
-                )
+        start_date = data.get('start_date', self.instance.start_date if self.instance else None)
+        end_date = data.get('end_date', self.instance.end_date if self.instance else None)
+        if start_date and end_date and end_date < start_date:
+            raise serializers.ValidationError(
+                'Дата окончания не может быть раньше даты начала.'
+            )
         request = self.context.get('request')
         cat = data.get('cat')
         if cat and request and cat.owner != request.user:
