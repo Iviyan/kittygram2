@@ -17,6 +17,17 @@ class StopSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     'Дата отъезда не может быть раньше даты прибытия.'
                 )
+        view = self.context.get('view')
+        order = data.get('order')
+        if view and order is not None:
+            trip_pk = view.kwargs.get('trip_pk')
+            qs = Stop.objects.filter(trip_id=trip_pk, order=order)
+            if self.instance is not None:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise serializers.ValidationError({
+                    'order': 'В этой поездке уже есть остановка с таким порядковым номером.'
+                })
         return data
 
 
